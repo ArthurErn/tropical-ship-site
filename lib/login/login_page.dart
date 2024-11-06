@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:tropical_ship_supply/connection/api_service.dart';
 import 'package:tropical_ship_supply/assets/colors.dart';
 import 'package:tropical_ship_supply/home_page/home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tropical_ship_supply/main.dart';
+import 'package:tropical_ship_supply/vessel/model/vessel.dart';
+import 'package:tropical_ship_supply/vessel/vessel_grid_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,6 +26,36 @@ class _LoginPageState extends State<LoginPage> {
   String errorTxt = '';
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserCredentials();
+  }
+
+  void _loadUserCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _rememberMe = prefs.getBool('remember_me') ?? false;
+      if (_rememberMe) {
+        userController.text = prefs.getString('username') ?? '';
+        passwordController.text = prefs.getString('password') ?? '';
+      }
+    });
+  }
+
+  void _saveUserCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setBool('remember_me', true);
+      await prefs.setString('username', userController.text);
+      await prefs.setString('password', passwordController.text);
+    } else {
+      await prefs.remove('remember_me');
+      await prefs.remove('username');
+      await prefs.remove('password');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
@@ -30,10 +64,11 @@ class _LoginPageState extends State<LoginPage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Container(
-              width: screenWidth > 1300?constraints.maxWidth * 0.38:constraints.maxWidth * 0.55,
+              width: screenWidth > 1300 ? constraints.maxWidth * 0.38 : constraints.maxWidth * 0.55,
               decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 0.5),
-                  borderRadius: BorderRadius.circular(16)),
+                border: Border.all(color: Colors.black, width: 0.5),
+                borderRadius: BorderRadius.circular(16),
+              ),
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
@@ -84,9 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(
-                      height: 14,
-                    ),
+                    const SizedBox(height: 14),
                     TextFormField(
                       controller: passwordController,
                       decoration: InputDecoration(
@@ -147,21 +180,28 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       height: 40,
                       child: ElevatedButton(
-                        onPressed: () async{
-                          if (_formKey.currentState?.validate() ?? false){
-                            await ApiService(baseUrl: 'http://localhost:3000/').post('auth/login', body: {"username": userController.text, "password": passwordController.text}, headers: <String, String>{'Content-Type': 'application/json'}).then((value){
-
-                              if(value['statusCode'] != 201){
+                        onPressed: () async {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            await ApiService(baseUrl: url_api).post(
+                              'auth/login',
+                              body: {
+                                "username": userController.text,
+                                "password": passwordController.text
+                              },
+                              headers: <String, String>{'Content-Type': 'application/json'},
+                            ).then((value) {
+                              if (value['statusCode'] != 201) {
                                 setState(() {
                                   errorMessage = true;
                                   errorTxt = value['message'];
                                 });
-                              }else{
+                              } else {
+                                _saveUserCredentials(); // Salva as credenciais
                                 setState(() {
-                                  errorMessage = false;  
+                                  errorMessage = false;
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const HomePage()),
+                                    MaterialPageRoute(builder: (context) => const VesselPage()),
                                   );
                                 });
                               }
@@ -169,14 +209,18 @@ class _LoginPageState extends State<LoginPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor:
-                                const Color.fromARGB(255, 36, 50, 255)),
+                          foregroundColor: Colors.white,
+                          backgroundColor: const Color.fromARGB(255, 36, 50, 255),
+                        ),
                         child: const Text('Login'),
                       ),
                     ),
                     const SizedBox(height: 15),
-                    if(errorMessage == true)...[Text(errorTxt, style: const TextStyle(color: Colors.red, fontSize: 14),)]
+                    if (errorMessage == true)
+                      Text(
+                        errorTxt,
+                        style: const TextStyle(color: Colors.red, fontSize: 14),
+                      )
                   ],
                 ),
               ),

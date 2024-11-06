@@ -4,17 +4,25 @@ import 'package:cherry_toast/cherry_toast.dart';
 import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:tropical_ship_supply/client/register_client_dialog.dart';
 import 'package:tropical_ship_supply/connection/api_service.dart';
 import 'package:tropical_ship_supply/assets/colors.dart';
+import 'package:tropical_ship_supply/currency/currency_grid_state.dart';
+import 'package:tropical_ship_supply/generic/pluto_grid_config.dart';
+import 'package:tropical_ship_supply/main.dart';
+import 'package:tropical_ship_supply/price/price_page.dart';
 import 'package:tropical_ship_supply/product/model/product.dart';
 import 'package:tropical_ship_supply/home_page/home_page.dart';
+import 'package:tropical_ship_supply/product/model/product_erp.dart';
+import 'package:tropical_ship_supply/product/product_erp_service.dart';
 import 'package:tropical_ship_supply/product/product_service.dart';
 import 'package:csv/csv.dart';
 import 'package:tropical_ship_supply/product/register_product_dialog.dart';
+import 'package:tropical_ship_supply/settings/settings_dialog.dart';
 import 'package:tropical_ship_supply/user/register_user_dialog.dart';
 import 'package:tropical_ship_supply/unity/register_unity_dialog.dart';
 import 'package:tropical_ship_supply/upload/upload_file_dialog.dart';
-import 'package:tropical_ship_supply/vessel/vessel_grid.dart';
+import 'package:tropical_ship_supply/vessel/vessel_page.dart';
 import 'package:tropical_ship_supply/vessel/vessel_grid_state.dart';
 
 class HomePageState extends State<HomePage> {
@@ -28,8 +36,7 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    produtoService = ProdutoService(
-        apiService: ApiService(baseUrl: 'http://localhost:3000/'));
+    produtoService = ProdutoService(apiService: ApiService(baseUrl: url_api));
     fetchProdutos();
   }
 
@@ -113,7 +120,7 @@ class HomePageState extends State<HomePage> {
           'codigo': PlutoCell(value: produto.codigo),
           'fornecedor': PlutoCell(value: produto.fornecedor),
           'marca': PlutoCell(value: produto.marca),
-          'unidade':PlutoCell(value: produto.unity),
+          'unidade': PlutoCell(value: produto.unity),
           'embalagem': PlutoCell(value: produto.embalagem),
           'tamanho': PlutoCell(value: produto.tamanho),
           'descricao': PlutoCell(value: produto.descricao),
@@ -143,32 +150,6 @@ class HomePageState extends State<HomePage> {
           },
         ),
       );
-    });
-  }
-
-  void _addMultipleRows(dynamic produto) {
-    print('chegou no multipleRows');
-    print(produto);
-    setState(() {
-      for(int i =0; i<produto.length;i++){
-        rows.add(
-        PlutoRow(
-          cells: {
-            // 'id': PlutoCell(value: ''),
-            'codigo': PlutoCell(value: produto[i]['codigo']),
-            'fornecedor': PlutoCell(value: produto[i]['fornecedor']),
-            'marca': PlutoCell(value: produto[i]['marca']),
-            'embalagem': PlutoCell(value: produto[i]['embalagem']),
-            'tamanho': PlutoCell(value: produto[i]['tamanho']),
-            'descricao': PlutoCell(value: produto[i]['descricao']),
-            'custo': PlutoCell(value: produto[i]['custo']),
-            'departamento': PlutoCell(value: produto[i]['departamento']),
-            'setor': PlutoCell(value: produto[i]['setor']),
-          },
-        ),
-      );
-      }
-      
     });
   }
 
@@ -202,6 +183,11 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text(
+          'Lista de produtos',
+          style: TextStyle(
+              fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         iconTheme: const IconThemeData(
           color: Colors.white,
         ),
@@ -209,93 +195,131 @@ class HomePageState extends State<HomePage> {
         backgroundColor: AppColors().blueColor,
         actions: [
           IconButton(
-            icon: Icon(Icons.download),
+            icon: const Icon(Icons.download),
             onPressed: _exportCSV,
           ),
         ],
       ),
       drawer: Drawer(
         backgroundColor: Colors.white,
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: AppColors().blueColor,
-              ),
-              child: Image.asset(
-                'lib/assets/images/logo-escura.png',
-                height: 110,
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: AppColors().blueColor,
+                    ),
+                    child: Image.asset(
+                      'lib/assets/images/logo-escura.png',
+                      height: 110,
+                    ),
+                  ),
+                  // ListTile(
+                  //   leading:
+                  //       Icon(Icons.upload_file, color: AppColors().blueColor),
+                  //   title: Text(
+                  //     'Upload de produto',
+                  //     style: TextStyle(color: AppColors().blueColor),
+                  //   ),
+                  //   onTap: () {
+                  //     uploadFile(context, _addMultipleRows);
+                  //   },
+                  // ),
+                  // const SizedBox(height: 15),
+                  ListTile(
+                    leading:
+                        Icon(Icons.upload_file, color: AppColors().blueColor),
+                    title: Text(
+                      'Tabela de vessels',
+                      style: TextStyle(color: AppColors().blueColor),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const VesselPage()),
+                      );
+                    },
+                  ),
+                  // const SizedBox(height: 15),
+                  // ListTile(
+                  //   leading:
+                  //       Icon(Icons.upload_file, color: AppColors().blueColor),
+                  //   title: Text(
+                  //     'Upload de vessel',
+                  //     style: TextStyle(color: AppColors().blueColor),
+                  //   ),
+                  //   onTap: () {
+                  //     uploadFile(
+                  //       context,
+                  //       (_) {},
+                  //       isProduct: false,
+                  //     );
+                  //   },
+                  // ),
+                  const SizedBox(height: 15),
+                  ListTile(
+                    leading:
+                        Icon(Icons.upload_file, color: AppColors().blueColor),
+                    title: Text(
+                      'Tabela de moedas',
+                      style: TextStyle(color: AppColors().blueColor),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CurrencyPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 15),
+                  ListTile(
+                    leading:
+                        Icon(Icons.grid_view, color: AppColors().blueColor),
+                    title: Text(
+                      'Criar cotação',
+                      style: TextStyle(color: AppColors().blueColor),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const PricePage()),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
+            // Adicionando a Row no final
             ListTile(
-              leading: Icon(Icons.person_add_alt_1_rounded,
-                  color: AppColors().blueColor),
+              leading:
+                  Icon(Icons.logout_outlined, color: AppColors().blueColor),
               title: Text(
-                'Cadastrar usuário',
+                'Logout',
                 style: TextStyle(color: AppColors().blueColor),
               ),
               onTap: () {
-                registerUser(context);
+                // Lógica de logout
               },
             ),
-            const SizedBox(height: 15),
             ListTile(
-              leading: Icon(Icons.one_x_mobiledata_sharp,
-                  color: AppColors().blueColor),
+              leading: Icon(Icons.settings, color: AppColors().blueColor),
               title: Text(
-                'Cadastrar unidade',
+                'Configuração',
                 style: TextStyle(color: AppColors().blueColor),
               ),
               onTap: () {
-                registerUnity(context);
-              },
-            ),
-            const SizedBox(height: 15),
-            ListTile(
-              leading: Icon(Icons.upload_file, color: AppColors().blueColor),
-              title: Text(
-                'Upload de produto',
-                style: TextStyle(color: AppColors().blueColor),
-              ),
-              onTap: () {
-                uploadFile(context, _addMultipleRows);
-              },
-            ),
-            const SizedBox(height: 15),
-            ListTile(
-              leading: Icon(Icons.upload_file, color: AppColors().blueColor),
-              title: Text(
-                'Tabela de vessels',
-                style: TextStyle(color: AppColors().blueColor),
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const VesselPage()),
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const SettingsDialog();
+                  },
                 );
-              },
-            ),
-            const SizedBox(height: 15),
-            ListTile(
-              leading: Icon(Icons.upload_file, color: AppColors().blueColor),
-              title: Text(
-                'Upload de vessel',
-                style: TextStyle(color: AppColors().blueColor),
-              ),
-              onTap: () {
-                uploadFile(context, (_){}, isProduct: false, );
-              },
-            ),
-            const SizedBox(height: 15),
-            ListTile(
-              leading: Icon(Icons.add_box, color: AppColors().blueColor),
-              title: Text(
-                'Cadastrar produto',
-                style: TextStyle(color: AppColors().blueColor),
-              ),
-              onTap: () {
-                registerProduct(context, _addNewRow); // Pass the callback here
               },
             ),
           ],
@@ -310,7 +334,7 @@ class HomePageState extends State<HomePage> {
                       columns: columns,
                       rows: rows,
                       onChanged: (event) async {
-                        await ApiService(baseUrl: 'http://localhost:3000/').post(
+                        await ApiService(baseUrl: url_api).post(
                             'products/${produtos![event.rowIdx].id}/ec4b2d97-7f7d-4031-accb-1601c1666a3a',
                             body: {
                               event.column.field.toString(): event.value
@@ -320,41 +344,9 @@ class HomePageState extends State<HomePage> {
                         event.stateManager
                             .setShowColumnFilter(true, notify: false);
                       },
-                      configuration: const PlutoGridConfiguration(
+                      configuration: PlutoGridConfiguration(
                         enterKeyAction: PlutoGridEnterKeyAction.toggleEditing,
-                        localeText: PlutoGridLocaleText(
-                          unfreezeColumn: 'Descongelar coluna',
-                          freezeColumnToStart: 'Congelar no início',
-                          freezeColumnToEnd: 'Congelar no final',
-                          autoFitColumn: 'Ajuste automático',
-                          hideColumn: 'Ocultar coluna',
-                          setColumns: 'Definir colunas',
-                          setFilter: 'Definir filtro',
-                          resetFilter: 'Redefinir filtro',
-                          setColumnsTitle: 'Título da coluna',
-                          filterColumn: 'Coluna',
-                          filterType: 'Tipo',
-                          filterValue: 'Valor',
-                          filterAllColumns: 'Filtrar todas as colunas',
-                          filterContains: 'Contém',
-                          filterEquals: 'Igual a',
-                          filterStartsWith: 'Começa com',
-                          filterEndsWith: 'Termina com',
-                          filterGreaterThan: 'Maior que',
-                          filterGreaterThanOrEqualTo: 'Maior ou igual a',
-                          filterLessThan: 'Menor que',
-                          filterLessThanOrEqualTo: 'Menor ou igual a',
-                          sunday: 'Dom',
-                          monday: 'Seg',
-                          tuesday: 'Ter',
-                          wednesday: 'Qua',
-                          thursday: 'Qui',
-                          friday: 'Sex',
-                          saturday: 'Sáb',
-                          hour: 'Hora',
-                          minute: 'Minuto',
-                          loadingText: 'Carregando',
-                        ),
+                        localeText: PlutoGridConfig().getPlutoGridLocaleText(),
                       ),
                     )
                   : const Center(child: Text('Nenhum produto encontrado')),

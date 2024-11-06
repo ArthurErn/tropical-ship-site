@@ -4,6 +4,7 @@ import 'package:tropical_ship_supply/connection/api_service.dart';
 import 'package:tropical_ship_supply/assets/colors.dart';
 import 'package:tropical_ship_supply/login/build_text_field.dart';
 import 'package:cherry_toast/cherry_toast.dart';
+import 'package:tropical_ship_supply/main.dart';
 
 void registerUnity(BuildContext context) {
   bool errorMessage = false;
@@ -44,7 +45,7 @@ void registerUnity(BuildContext context) {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () async {
-                  await ApiService(baseUrl: 'http://localhost:3000/')
+                  await ApiService(baseUrl: url_api)
                       .post('unities', body: {
                     "descricao": unityController.text
                   }).then((value) {

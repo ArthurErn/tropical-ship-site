@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:tropical_ship_supply/connection/api_service.dart';
 import 'package:tropical_ship_supply/assets/colors.dart';
+import 'package:tropical_ship_supply/generic/pluto_grid_config.dart';
 import 'package:tropical_ship_supply/home_page/home_page.dart';
+import 'package:tropical_ship_supply/main.dart';
+import 'package:tropical_ship_supply/product/product_search_dialog.dart';
 import 'package:tropical_ship_supply/product/register_product_dialog.dart';
 import 'package:csv/csv.dart';
 import 'package:tropical_ship_supply/user/register_user_dialog.dart';
@@ -28,7 +31,7 @@ class VesselPageState extends State<VesselPage> {
   void initState() {
     super.initState();
     vesselService = VesselService(
-        apiService: ApiService(baseUrl: 'http://localhost:3000/'));
+        apiService: ApiService(baseUrl: url_api));
     fetchVessels();
   }
 
@@ -181,12 +184,28 @@ class VesselPageState extends State<VesselPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Lista de embarcações',
+          style: TextStyle(
+              fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         iconTheme: const IconThemeData(
           color: Colors.white,
         ),
         toolbarHeight: 70,
         backgroundColor: AppColors().blueColor,
         actions: [
+          IconButton(icon: Icon(Icons.refresh, color: Colors.white,), onPressed: (){
+            Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const VesselPage()),
+                );
+          }),
+          const SizedBox(width: 10,),
           IconButton(
             icon: Icon(Icons.download),
             onPressed: _exportCSV,
@@ -220,47 +239,24 @@ class VesselPageState extends State<VesselPage> {
       //       ),
       //       const SizedBox(height: 15),
       //       ListTile(
-      //         leading: Icon(Icons.one_x_mobiledata_sharp,
-      //             color: AppColors().blueColor),
-      //         title: Text(
-      //           'Cadastrar unidade',
-      //           style: TextStyle(color: AppColors().blueColor),
-      //         ),
-      //         onTap: () {
-      //           registerUnity(context);
-      //         },
-      //       ),
-      //       const SizedBox(height: 15),
-      //       ListTile(
-      //         leading: Icon(Icons.upload_file, color: AppColors().blueColor),
-      //         title: Text(
-      //           'Upload de produto',
-      //           style: TextStyle(color: AppColors().blueColor),
-      //         ),
-      //         onTap: () {
-      //           uploadFile(context);
-      //         },
-      //       ),
-      //       const SizedBox(height: 15),
-      //       ListTile(
       //         leading: Icon(Icons.upload_file, color: AppColors().blueColor),
       //         title: Text(
       //           'Upload de vessel',
       //           style: TextStyle(color: AppColors().blueColor),
       //         ),
       //         onTap: () {
-      //           uploadFile(context);
+      //           uploadFile(context, (_){}, isProduct: false);
       //         },
       //       ),
       //       const SizedBox(height: 15),
       //       ListTile(
-      //         leading: Icon(Icons.add_box, color: AppColors().blueColor),
+      //         leading: Icon(Icons.upload_file, color: AppColors().blueColor),
       //         title: Text(
-      //           'Cadastrar produto',
+      //           'Pesquisar código ERP',
       //           style: TextStyle(color: AppColors().blueColor),
       //         ),
       //         onTap: () {
-      //           registerProduct(context, _addNewRow); // Pass the callback here
+      //           searchProductDialog(context);
       //         },
       //       ),
       //     ],
@@ -275,8 +271,8 @@ class VesselPageState extends State<VesselPage> {
                       columns: columns,
                       rows: rows,
                       onChanged: (event) async {
-                        await ApiService(baseUrl: 'http://localhost:3000/').post(
-                            'vessels/${vessels![event.rowIdx].id}/ec4b2d97-7f7d-4031-accb-1601c1666a3a',
+                        await ApiService(baseUrl: url_api).post(
+                            'upload/${vessels![event.rowIdx].id}',
                             body: {
                               event.column.field.toString(): event.value
                             }).then((value) {});
@@ -284,41 +280,9 @@ class VesselPageState extends State<VesselPage> {
                       onLoaded: (PlutoGridOnLoadedEvent event) {
                         event.stateManager.setShowColumnFilter(true, notify: false);
                       },
-                      configuration: const PlutoGridConfiguration(
+                      configuration: PlutoGridConfiguration(
                         enterKeyAction: PlutoGridEnterKeyAction.toggleEditing,
-                        localeText: PlutoGridLocaleText(
-                          unfreezeColumn: 'Descongelar coluna',
-                          freezeColumnToStart: 'Congelar no início',
-                          freezeColumnToEnd: 'Congelar no final',
-                          autoFitColumn: 'Ajuste automático',
-                          hideColumn: 'Ocultar coluna',
-                          setColumns: 'Definir colunas',
-                          setFilter: 'Definir filtro',
-                          resetFilter: 'Redefinir filtro',
-                          setColumnsTitle: 'Título da coluna',
-                          filterColumn: 'Coluna',
-                          filterType: 'Tipo',
-                          filterValue: 'Valor',
-                          filterAllColumns: 'Filtrar todas as colunas',
-                          filterContains: 'Contém',
-                          filterEquals: 'Igual a',
-                          filterStartsWith: 'Começa com',
-                          filterEndsWith: 'Termina com',
-                          filterGreaterThan: 'Maior que',
-                          filterGreaterThanOrEqualTo: 'Maior ou igual a',
-                          filterLessThan: 'Menor que',
-                          filterLessThanOrEqualTo: 'Menor ou igual a',
-                          sunday: 'Dom',
-                          monday: 'Seg',
-                          tuesday: 'Ter',
-                          wednesday: 'Qua',
-                          thursday: 'Qui',
-                          friday: 'Sex',
-                          saturday: 'Sáb',
-                          hour: 'Hora',
-                          minute: 'Minuto',
-                          loadingText: 'Carregando',
-                        ),
+                        localeText: PlutoGridConfig().getPlutoGridLocaleText()
                       ),
                     )
                   : const Center(child: Text('Nenhum vessel encontrado')),

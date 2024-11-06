@@ -7,7 +7,6 @@ class ApiService {
 
   ApiService({required this.baseUrl});
 
-  // Método genérico para requisições GET
   Future<dynamic> get(String endpoint, {Map<String, String>? headers}) async {
     Uri url = Uri.parse('$baseUrl$endpoint');
     final String basicAuth = 'Basic ${base64Encode(utf8.encode('jhamerski:0612'))}';
@@ -18,12 +17,36 @@ class ApiService {
     return jsonDecode(utf8.decode(response.bodyBytes));
   }
 
+  Future<dynamic> getList(String endpoint, {Map<String, String>? headers}) async {
+    Uri url = Uri.parse('$baseUrl$endpoint');
+    final String basicAuth = 'Basic ${base64Encode(utf8.encode('jhamerski:0612'))}';
+    final response = await http.get(url, headers: {
+        'Authorization': basicAuth,
+      });
+
+    return response.body;
+  }
+
+  Future<dynamic> getERP(String endpoint, {Map<String, String>? headers}) async {
+  Uri url = Uri.parse('$baseUrl/$endpoint');
+  const String bearerToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MjQyNTE3NzQsImV4cCI6MjAzOTYxMTc3NH0.0ugOdilM8F81MDOSTPf0IstO7MLfcnmoFssy1-BKMcw';
+  
+  final response = await http.get(
+    url,
+    headers: {
+      'Authorization': 'Bearer $bearerToken',
+      if (headers != null) ...headers,
+    },
+  );
+
+  return jsonDecode(utf8.decode(response.bodyBytes));
+}
+
   // Método genérico para requisições POST
   Future<dynamic> post(String endpoint,
       {Map<String, String>? headers, dynamic body}) async {
     Uri url = Uri.parse('$baseUrl$endpoint');
     final String basicAuth = 'Basic ${base64Encode(utf8.encode('jhamerski:0612'))}';
-    print(body);
     final response = await http.post(url, body: body, headers: {
         'Authorization': basicAuth,
       });

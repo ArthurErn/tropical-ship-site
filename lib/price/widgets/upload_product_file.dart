@@ -7,7 +7,7 @@ import 'package:cherry_toast/cherry_toast.dart';
 import 'package:tropical_ship_supply/main.dart';
 import 'package:tropical_ship_supply/product/model/product.dart';
 
-void uploadFile(BuildContext context, Function(dynamic) onAddProduct, {bool isProduct = true} ) {
+void uploadProductFile(BuildContext context, dynamic onAddProduct) {
   bool errorMessage = false;
   String errorTxt = '';
   String? fileName;
@@ -86,36 +86,16 @@ void uploadFile(BuildContext context, Function(dynamic) onAddProduct, {bool isPr
                               isLoading = true;
                             });
                       await ApiService(baseUrl: url_api)
-                          .postFile(isProduct ?'products/upload':'upload', content, fileType, fileName!)
+                          .postFile('product-order/upload', content, fileType, fileName!)
                           .then((value) {
-                            
-                        if (value['statusCode'] != 201) {
-                          setState(() {
-                            errorMessage = true;
-                            errorTxt = value['message'];
-                          });
-                        } else {
-                          if(isProduct){
-                            onAddProduct(value['body']);
-                          }
-                          setState(() {
-                            errorMessage = false;
-                            Navigator.pop(context);
-                            CherryToast.success(
-                              title: Text('Sucesso'),
-                              description: Text('Arquivo carregado com sucesso'),
-                              animationType: AnimationType.fromRight,
-                              animationDuration: const Duration(milliseconds: 500),
-                              autoDismiss: true,
-                            ).show(context);
-                          });
-                        }
-                        setState((){
-                              isLoading = false;
-                            });
+                            onAddProduct(value);
                       });
                     });
                     reader.readAsArrayBuffer(selectedFile!);
+                    setState((){
+                      isLoading = false;
+                      Navigator.pop(context);
+                    });
                   }
                 },
               ),

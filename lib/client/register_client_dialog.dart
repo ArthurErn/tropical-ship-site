@@ -7,13 +7,14 @@ import 'package:cherry_toast/cherry_toast.dart';
 import 'package:tropical_ship_supply/main.dart';
 import 'package:tropical_ship_supply/user/model/option.dart';
 
-void registerUser(BuildContext context) async {
-  String? selectedOptionId;
+void registerClient(BuildContext context) async {
   bool errorMessage = false;
   String errorTxt = '';
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController clienteController = TextEditingController();
+  TextEditingController comissaoController = TextEditingController();
+  TextEditingController lucroController = TextEditingController();
+  TextEditingController descontoController = TextEditingController();
+  TextEditingController markupController = TextEditingController();
 
   List<Option> options = [];
   try {
@@ -30,10 +31,10 @@ void registerUser(BuildContext context) async {
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
         void validateFields() {
-          if (usernameController.text.isEmpty ||
-              emailController.text.isEmpty ||
-              passwordController.text.isEmpty ||
-              selectedOptionId == null) {
+          if (clienteController.text.isEmpty ||
+              descontoController.text.isEmpty ||
+              comissaoController.text.isEmpty
+              || lucroController.text.isEmpty || markupController.text.isEmpty) {
             setState(() {
               errorMessage = true;
               errorTxt = 'Por favor, preencha todos os campos.';
@@ -48,67 +49,21 @@ void registerUser(BuildContext context) async {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                buildTextField(usernameController, 'Usuário',
-                    'Favor, inserir um nome de usuário'),
+                buildTextField(clienteController, 'Cliente',
+                    'Favor, inserir um nome de cliente'),
                 const SizedBox(height: 10),
                 buildTextField(
-                    emailController, 'E-mail', 'Favor, inserir um email'),
+                    comissaoController, 'Comissão', 'Favor, inserir uma comissão'),
                 const SizedBox(height: 10),
                 buildTextField(
-                    passwordController, 'Senha', 'Favor, inserir uma senha',
-                    obscure: true),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 50,
-                  child: Center(
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                          ),
-                        ),
-                        errorStyle: const TextStyle(color: Colors.red),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 36, 50, 255),
-                          ),
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedOptionId,
-                          hint: const Text('Selecione um perfil'),
-                          items: options.map((Option option) {
-                            return DropdownMenuItem<String>(
-                              value: option.id,
-                              child: Text(option.name),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedOptionId = newValue;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                    descontoController, 'Desconto', 'Favor, inserir um desconto'),
+                    const SizedBox(height: 10),
+                buildTextField(
+                    lucroController, 'Lucro', 'Favor, inserir o lucro'),
+                    const SizedBox(height: 10),
+                buildTextField(
+                    markupController, 'Markup', 'Favor, inserir o markup'),
+
                 const SizedBox(height: 10),
                 if (errorMessage == true) ...[
                   Text(
@@ -138,12 +93,13 @@ void registerUser(BuildContext context) async {
                   });
                   if (!errorMessage) {
                     await ApiService(baseUrl: url_api)
-                        .post('users', body: {
-                      "username": usernameController.text,
-                      "email": emailController.text,
-                      "password": passwordController.text,
-                      "profileId": selectedOptionId.toString()
-                    }).then((value) {
+                        .post('client', body: {
+                          "cliente": clienteController.text,
+                          "comissao": comissaoController.text,
+                          "lucro": lucroController.text,
+                          "desconto": descontoController.text,
+                          "markup": markupController.text
+                        }).then((value) {
                       if (value['statusCode'] != 201) {
                         setState(() {
                           errorMessage = true;
@@ -156,7 +112,7 @@ void registerUser(BuildContext context) async {
                           CherryToast.success(
                             title: const Text('Sucesso'),
                             description:
-                                const Text('Usuário cadastrado com sucesso'),
+                                const Text('Cliente cadastrado com sucesso'),
                             animationType: AnimationType.fromRight,
                             animationDuration:
                                 const Duration(milliseconds: 500),

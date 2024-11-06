@@ -1,46 +1,51 @@
 class Produto {
-  final int id;
-  final String codigo;
-  final String fornecedor;
-  final String marca;
-  final String embalagem;
-  final String tamanho;
-  final String remark;
-  final String descricao;
-  final String unity;
-  final String descricaoCompra;
-  final String? custo;
-  final String departamento;
-  final String setor;
-  final String? codMae;
-  final String? fatorMae;
-  final String? endereco;
-  final String? desconto;
-  final String? recordedAt;
-  final String? originalSheetName;
+   int? id;
+   String? codigo;
+   String? fornecedor;
+   String? marca;
+   String? embalagem;
+   String? tamanho;
+   String? remark;
+   String? descricao;
+   String? unity;
+   String? descricaoCompra;
+   String? custo; // Custo original em real
+   String? departamento;
+   String? setor;
+   String? codMae;
+   String? fatorMae;
+   String? endereco;
+   String? desconto;
+   String? recordedAt;
+   String? originalSheetName;
+  
+  // Novo campo para armazenar o preço calculado
+  String? precoCalculado;
 
   Produto({
-    required this.id,
-    required this.codigo,
-    required this.fornecedor,
-    required this.marca,
-    required this.embalagem,
-    required this.tamanho,
-    required this.remark,
-    required this.descricao,
-    required this.unity,
-    required this.descricaoCompra,
+    this.id,
+    this.codigo,
+    this.fornecedor,
+    this.marca,
+    this.embalagem,
+    this.tamanho,
+    this.remark,
+    this.descricao,
+    this.unity,
+    this.descricaoCompra,
     this.custo,
-    required this.departamento,
-    required this.setor,
+    this.departamento,
+    this.setor,
     this.codMae,
     this.fatorMae,
     this.endereco,
     this.desconto,
     this.recordedAt,
     this.originalSheetName,
+    this.precoCalculado, // Incluindo o novo campo
   });
 
+  // Método para criar Produto a partir de JSON
   factory Produto.fromJson(Map<String, dynamic> json) {
     return Produto(
       id: json['id'],
@@ -62,6 +67,7 @@ class Produto {
       desconto: json['desconto'],
       recordedAt: json['recordedAt'],
       originalSheetName: json['originalSheetName'],
+      precoCalculado: null, // Inicializa o preço calculado como nulo
     );
   }
 }

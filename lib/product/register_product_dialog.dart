@@ -4,6 +4,7 @@ import 'package:tropical_ship_supply/connection/api_service.dart';
 import 'package:tropical_ship_supply/assets/colors.dart';
 import 'package:tropical_ship_supply/login/build_text_field.dart';
 import 'package:cherry_toast/cherry_toast.dart';
+import 'package:tropical_ship_supply/main.dart';
 import 'package:tropical_ship_supply/product/model/product.dart';
 
 void registerProduct(BuildContext context, Function(Produto) onAddProduct) {
@@ -187,7 +188,7 @@ void registerProduct(BuildContext context, Function(Produto) onAddProduct) {
                 ),
                 onPressed: () async {
                   if (validateFields()) {
-                    await ApiService(baseUrl: 'http://localhost:3000/')
+                    await ApiService(baseUrl: url_api)
                         .post('products', body: {
                       "codigo": codigoController.text,
                       "fornecedor": fornecedorController.text,
